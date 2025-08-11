@@ -1,0 +1,434 @@
+extends layout
+
+block content
+  div(class="container mx-auto px-4 py-6")
+    div(class="grid grid-cols-1 lg:grid-cols-4 gap-8")
+      div(class="lg:col-span-3")
+        nav(class="mb-4")
+          ol(class="flex items-center space-x-2 text-sm text-gray-500")
+            li: a(href="/" class="hover:text-primary-600") Beranda
+            li: span /
+            li: a(href=`/anime/${anime.slug}` class="hover:text-primary-600")= anime.title
+            li: span /
+            li(class="text-gray-900 font-medium") Episode #{episode.number}
+
+        div(class="bg-black rounded-lg overflow-hidden mb-6 relative")
+          div(class="aspect-video")
+            video(
+              id="player"
+              class="w-full h-full"
+              preload="metadata"
+              poster='/stream?url='+anime.poster
+              crossorigin="anonymous"
+              autoplay
+              playsinline
+              allow="autoplay"
+              muted
+            )
+              if episode.video_sources
+                if Array.isArray(episode.video_sources)
+                  each source in episode.video_sources
+                    source(src=source.url || source type=source.type || "video/mp4")
+                else
+                  source(src=episode.video_sources type="video/mp4")
+              
+              p(class="text-white text-center p-4") Browser Anda tidak mendukung video player.
+
+        div(class="bg-white rounded-lg shadow-sm p-6 mb-6")
+          div
+            label(for="autonexteps" class="inline-flex items-center cursor-pointer select-none relative")
+              input(id="autonexteps" type="checkbox" class="peer relative h-5 w-5 appearance-none rounded-md border border-gray-300 bg-white transition-colors checked:bg-primary-600 checked:border-primary-600 focus:ring-2 focus:ring-primary-300")
+              span(class="ml-2 text-gray-800") Auto Next Episode
+              svg(class="pointer-events-none absolute w-5 h-5 text-white hidden peer-checked:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="left: 0; top: 0;")
+                polyline(points="20 6 9 17 4 12")
+            
+
+        div(class="bg-white rounded-lg shadow-sm p-6 mb-6")
+          div(class="flex items-center justify-between")
+            div
+              if navigation.prev && navigation.prev < navigation.all_episodes.length && navigation.prev > 1
+                a(href=`/anime/${anime.slug}/episode/${navigation.prev}` class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors")
+                  svg(class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                    path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7")
+                  span Prev
+              else
+                div(class="text-gray-400") First
+            
+            div(class="text-center")
+              span(class="text-sm text-gray-500") #{episode.number}
+              if navigation.all_episodes && navigation.all_episodes.length > 0
+                span(class="text-sm text-gray-500") /#{navigation.all_episodes.length}
+            
+            div
+              if navigation.next || navigation.next < navigation.all_episodes.length
+                a(href=`/anime/${anime.slug}/episode/${navigation.next}` class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors")
+                  span Next
+                  svg(class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                    path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7")
+              else
+                div(class="text-gray-400") Next
+
+        if episode.download_links && (episode.download_links.mp4 || episode.download_links.mkv)
+          div(class="bg-white rounded-lg shadow-sm mb-6")
+            button(onclick="toggleDownloads()" class="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors")
+              div(class="flex items-center")
+                svg(class="w-5 h-5 mr-3 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                  path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z")
+                h3(class="font-bold text-gray-900") Download Episode
+                - var totalLinks = 0
+                if episode.download_links.mp4
+                  each resolution in episode.download_links.mp4
+                    - totalLinks += resolution.urls.length
+                if episode.download_links.mkv
+                  each resolution in episode.download_links.mkv
+                    - totalLinks += resolution.urls.length
+                span(class="ml-2 text-sm text-gray-500")= `(${totalLinks} links)`
+              svg(id="downloadChevron" class="w-5 h-5 text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7")
+            
+            div(id="downloadContent" class="hidden border-t border-gray-200")
+              div(class="flex border-b border-gray-200")
+                if episode.download_links.mp4 && episode.download_links.mp4.length > 0
+                  button(onclick="switchFormat('mp4')" id="mp4Tab" class="flex-1 px-4 py-3 text-sm font-medium text-center border-b-2 border-transparent hover:text-primary-600 hover:border-primary-300 transition-colors")
+                    span(class="flex items-center justify-center")
+                      svg(class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                        path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2")
+                      span MP4
+                if episode.download_links.mkv && episode.download_links.mkv.length > 0
+                  button(onclick="switchFormat('mkv')" id="mkvTab" class="flex-1 px-4 py-3 text-sm font-medium text-center border-b-2 border-transparent hover:text-primary-600 hover:border-primary-300 transition-colors")
+                    span(class="flex items-center justify-center")
+                      svg(class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                        path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2")
+                      span MKV
+              
+              if episode.download_links.mp4 && episode.download_links.mp4.length > 0
+                div(id="mp4Content" class="p-4")
+                  each resolution in episode.download_links.mp4
+                    div(class="mb-4 last:mb-0")
+                      div(class="flex items-center justify-between mb-2")
+                        span(class="text-sm font-medium text-gray-700 bg-blue-50 px-2 py-1 rounded")= resolution.resolution
+                        span(class="text-xs text-gray-500")= `${resolution.urls.length} providers`
+                      div(class="grid grid-cols-2 sm:grid-cols-3 gap-2")
+                        each provider in resolution.urls
+                          a(href=provider.url target="_blank" rel="noopener noreferrer" class="flex items-center justify-center p-2 text-xs border border-gray-200 rounded hover:border-primary-300 hover:bg-primary-50 transition-colors")
+                            svg(class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                              path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3")
+                            span(class="truncate")= provider.provider
+              
+              if episode.download_links.mkv && episode.download_links.mkv.length > 0
+                div(id="mkvContent" class="p-4 hidden")
+                  each resolution in episode.download_links.mkv
+                    div(class="mb-4 last:mb-0")
+                      div(class="flex items-center justify-between mb-2")
+                        span(class="text-sm font-medium text-gray-700 bg-green-50 px-2 py-1 rounded")= resolution.resolution
+                        span(class="text-xs text-gray-500")= `${resolution.urls.length} providers`
+                      div(class="grid grid-cols-2 sm:grid-cols-3 gap-2")
+                        each provider in resolution.urls
+                          a(href=provider.url target="_blank" rel="noopener noreferrer" class="flex items-center justify-center p-2 text-xs border border-gray-200 rounded hover:border-primary-300 hover:bg-primary-50 transition-colors")
+                            svg(class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24")
+                              path(stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3")
+                            span(class="truncate")= provider.provider
+
+        if adSlots && adSlots.playerBottom && adSlots.playerBottom.length > 0
+          div(class="mb-6")
+            each ad in adSlots.playerBottom
+              div(class="ad-slot bg-gray-100 rounded-lg")!= ad.content
+
+      div(class="lg:col-span-1")
+        if adSlots && adSlots.sidebarTop && adSlots.sidebarTop.length > 0
+          div(class="mb-6")
+            each ad in adSlots.sidebarTop
+              div(class="ad-slot bg-gray-100 rounded-lg")!= ad.content
+
+        div(class="bg-white rounded-lg shadow-sm p-6 mb-6")
+          a(href=`/anime/${anime.slug}`)
+            img(src=anime.poster alt=anime.title class="w-full rounded-lg mb-3" onerror="this.onerror=null;this.src='https://placehold.co/400x600?text=No+Image';")
+          h3(class="font-bold text-gray-900 mb-2")
+            a(href=`/anime/${anime.slug}` class="hover:text-primary-600")= anime.title
+          if anime.synopsis
+            p(class="text-sm text-gray-600 line-clamp-3")= anime.synopsis
+          div(class="mt-3")
+            a(href=`/anime/${anime.slug}` class="text-primary-600 text-sm hover:text-primary-700") Lihat Detail Anime
+
+        div(class="bg-white rounded-lg shadow-sm p-6 mb-6")
+          h3(class="font-bold text-gray-900 mb-4") Bagikan Episode
+          div(class="space-y-2")
+            button(onclick=`shareEpisode('facebook')` class="w-full bg-blue-600 text-white py-2 px-3 rounded text-sm hover:bg-blue-700 transition-colors") Facebook
+            button(onclick=`shareEpisode('twitter')` class="w-full bg-sky-500 text-white py-2 px-3 rounded text-sm hover:bg-sky-600 transition-colors") Twitter
+            button(onclick="copyEpisodeLink()" class="w-full bg-gray-600 text-white py-2 px-3 rounded text-sm hover:bg-gray-700 transition-colors") Copy Link
+
+        if adSlots && adSlots.sidebarBottom && adSlots.sidebarBottom.length > 0
+          div(class="mb-6")
+            each ad in adSlots.sidebarBottom
+              div(class="ad-slot bg-gray-100 rounded-lg")!= ad.content
+
+block scripts
+  script.
+    const autonexteps = document.getElementById('autonexteps')
+    autonexteps.checked = localStorage.getItem('AutoPlayNextEpisode') === 'true';
+    autonexteps.addEventListener('change', (e) => {
+      localStorage.setItem('AutoPlayNextEpisode', e.target.checked);
+    });
+    const player = new Plyr('#player', {
+      autoplay: true,
+      muted: true,
+      controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
+      settings: ['quality', 'speed'],
+      quality: {
+        default: 'auto',
+        options: ['auto', '1080', '720', '480', '360']
+      },
+      speed: {
+        selected: 1,
+        options: [0.5, 0.75, 1, 1.25, 1.5, 2]
+      },
+      keyboard: {
+        focused: true,
+        global: true
+      },
+      tooltips: {
+        controls: true,
+        seek: true
+      },
+      captions: {
+        active: false,
+        language: 'auto',
+        update: false
+      },
+      fullscreen: {
+        enabled: true,
+        fallback: true,
+        iosNative: false
+      },
+      storage: {
+        enabled: true,
+        key: 'plyr'
+      }
+    });
+
+    const video = player.media;
+    const playerContainer = document.querySelector('#player');
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        playerContainer.play().catch();
+      }
+    }, { threshold: 0.6 });
+    observer.observe(playerContainer);
+
+    const anime = '#{anime}'
+    const episode = '#{episode}';
+    const episodeNumber = #{episode.number};
+    const animeSlug = '#{anime.slug}';
+    const nextEpisodeNumber = #{navigation.next || 'null'};
+    
+    player.on('timeupdate', event => {
+      const currentTime = player.currentTime;
+      const duration = player.duration;
+      if (duration > 0 && currentTime > 0) {
+        const progress = (currentTime / duration) * 100;
+        if (progress > 1 && progress < 99) {
+          localStorage.setItem(`episode_progress_${animeSlug}_${episodeNumber}`, JSON.stringify({
+            currentTime: currentTime,
+            progress: progress,
+            timestamp: Date.now(),
+            animeSlug: animeSlug,
+            episodeNumber: episodeNumber
+          }));
+        }
+      }
+    });
+
+    player.on('loadedmetadata', event => {
+      const savedProgress = localStorage.getItem(`episode_progress_${animeSlug}_${episodeNumber}`);
+      if (savedProgress) {
+        try {
+          const progressData = JSON.parse(savedProgress);
+          const daysSinceWatch = (Date.now() - progressData.timestamp) / (1000 * 60 * 60 * 24);
+          if (daysSinceWatch < 7 && progressData.progress > 5 && progressData.progress < 95) {
+            const minutes = Math.floor(progressData.currentTime / 60);
+            const seconds = Math.floor(progressData.currentTime % 60).toString().padStart(2, '0');
+            console.log(`Resuming from ${minutes}:${seconds}`);
+            player.currentTime = progressData.currentTime;
+            player.play();
+          }
+        } catch (e) {
+          console.error('Error loading saved progress:', e);
+        }
+      }
+    });
+
+    player.on('ready', event => {
+      console.log('Plyr is ready');
+      player.volume = 0.8;
+      player.elements.container.focus();
+    });
+
+    player.on('play', event => {
+      console.log('Video started playing');
+    });
+
+    player.on('pause', event => {
+      console.log('Video paused');
+    });
+
+    player.on('ended', event => {
+      console.log('Video ended');
+      
+      localStorage.removeItem(`episode_progress_${animeSlug}_${episodeNumber}`);
+      
+      if (nextEpisodeNumber && nextEpisodeNumber !== 'null') {
+        const nextEpisodeUrl = `/anime/${animeSlug}/episode/${nextEpisodeNumber}`;
+        if (localStorage.getItem('AutoPlayNextEpisode') === 'true') {
+          window.location.href = nextEpisodeUrl;
+        }
+      } else {
+        const nextEpisodeLink = document.querySelector('a[href*="/episode/"][href*="Episode Selanjutnya"], a[href*="/episode/"] span:contains("Episode Selanjutnya")');
+        if (nextEpisodeLink) {
+          const linkElement = nextEpisodeLink.closest('a');
+          if (linkElement && localStorage.getItem('AutoPlayNextEpisode') === 'true') {
+            window.location.href = linkElement.href;
+          }
+        } else {
+          alert('Episode selesai! Terima kasih telah menonton.');
+        }
+      }
+    });
+
+    player.on('error', event => {
+      console.error('Plyr error:', event.detail);
+      showVideoError();
+    });
+
+    player.on('loadstart', event => {
+      console.log('Video loading started');
+      
+    });
+
+    player.on('canplay', event => {
+      console.log('Video can start playing');
+    });
+    function showVideoError() {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 text-white text-center p-4 z-10';
+      errorDiv.innerHTML = `
+        <div>
+          <svg class="w-16 h-16 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+          <h3 class="text-lg font-semibold mb-2">Video Tidak Dapat Dimuat</h3>
+          <p class="text-sm text-gray-300 mb-4">Terjadi kesalahan saat memuat video. Ini mungkin karena:</p>
+          <ul class="text-xs text-gray-400 text-left max-w-md mx-auto space-y-1">
+            <li>• Server video sedang bermasalah</li>
+            <li>• Link video sudah tidak valid</li>
+            <li>• Masalah koneksi internet</li>
+            <li>• Browser tidak mendukung format video</li>
+          </ul>
+          <button onclick="location.reload()" class="mt-4 bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors">Coba Lagi</button>
+        </div>
+      `;
+      player.elements.container.appendChild(errorDiv);
+    }
+
+
+    function toggleDownloads() {
+      const content = document.getElementById('downloadContent');
+      const chevron = document.getElementById('downloadChevron');
+      
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+        
+        const mp4Tab = document.getElementById('mp4Tab');
+        const mkvTab = document.getElementById('mkvTab');
+        if (mp4Tab) {
+          switchFormat('mp4');
+        } else if (mkvTab) {
+          switchFormat('mkv');
+        }
+      } else {
+        content.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function switchFormat(format) {
+      const mp4Tab = document.getElementById('mp4Tab');
+      const mkvTab = document.getElementById('mkvTab');
+      const mp4Content = document.getElementById('mp4Content');
+      const mkvContent = document.getElementById('mkvContent');
+      
+      if (mp4Tab) {
+        mp4Tab.classList.remove('text-primary-600', 'border-primary-600');
+        mp4Tab.classList.add('text-gray-500', 'border-transparent');
+      }
+      if (mkvTab) {
+        mkvTab.classList.remove('text-primary-600', 'border-primary-600');
+        mkvTab.classList.add('text-gray-500', 'border-transparent');
+      }
+      
+      if (mp4Content) mp4Content.classList.add('hidden');
+      if (mkvContent) mkvContent.classList.add('hidden');
+      
+      if (format === 'mp4' && mp4Tab && mp4Content) {
+        mp4Tab.classList.remove('text-gray-500', 'border-transparent');
+        mp4Tab.classList.add('text-primary-600', 'border-primary-600');
+        mp4Content.classList.remove('hidden');
+      } else if (format === 'mkv' && mkvTab && mkvContent) {
+        mkvTab.classList.remove('text-gray-500', 'border-transparent');
+        mkvTab.classList.add('text-primary-600', 'border-primary-600');
+        mkvContent.classList.remove('hidden');
+      }
+    }
+
+    function shareEpisode(platform) {
+      const url = encodeURIComponent(window.location.href);
+      const text = encodeURIComponent(`Nonton ${anime.title} Episode ${episode.number} di KitaNime`);
+      
+      switch(platform) {
+        case 'facebook':
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+          break;
+        case 'twitter':
+          window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+          break;
+        case 'whatsapp':
+          window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
+          break;
+        case 'telegram':
+          window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
+          break;
+      }
+    }
+
+    function copyEpisodeLink() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert('Link episode berhasil disalin!');
+      }).catch(() => {
+        const textArea = document.createElement('textarea');
+        textArea.value = window.location.href;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Link episode berhasil disalin!');
+      });
+    }
+
+    video.addEventListener('ended', () => {
+      const nextEpisodeLink = document.querySelector('a[href*="/episode/"]:has-text("Episode Selanjutnya")');
+      if (nextEpisodeLink && localStorage.getItem('AutoPlayNextEpisode') === 'true') {
+        window.location.href = nextEpisodeLink.href;
+      }
+    });
+
+    video.addEventListener('timeupdate', () => {
+      if (video.duration > 0) {
+        const progress = (video.currentTime / video.duration) * 100;
+        localStorage.setItem(`watch_progress_${anime.slug}_${episode.number}`, JSON.stringify({
+          currentTime: video.currentTime,
+          duration: video.duration,
+          progress: progress,
+          timestamp: Date.now()
+        }));
+      }
+    });
