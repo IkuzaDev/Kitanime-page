@@ -31,7 +31,7 @@ app.use(cors(
 ));
 
 app.use((req, res, next) => {
-  console.log([${new Date().toISOString()}] ${req.method} ${req.url});
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   res.locals.req = req;
 
   next();
@@ -166,9 +166,21 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.use((req, res, next) => {
-    console.log([${new Date().toISOString()}] ${req.ip} ${req.method} ${req.originalUrl});
-    next();
-});
+async function startServer() {
+  try {
+    await initializeDatabase();
+    console.log('Database initialized successfully');
+    
+    app.listen(PORT, () => {
+      console.log(`KitaNime server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 module.exports = app;
