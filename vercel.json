@@ -2,11 +2,12 @@
   "version": 2,
   "regions": ["sin1"],
   "routes": [
-    { "src": "/stream", "dest": "/app.js" },
-    { "src": "/proxy", "dest": "/app.js" },
-    { "src": "/api/(.*)", "dest": "/app.js" },
-    { "src": "/admin/(.*)", "dest": "/app.js" },
-    { "src": "/anime/(.*)", "dest": "/app.js" },
-    { "src": "/(.*)", "dest": "/app.js" }
+    { "src": "/stream", "dest": "/api/app.js" },
+    { "src": "/proxy", "dest": "/api/app.js" },
+    { "src": "/api/(.*)", "dest": "/api/app.js" },
+    { "src": "/admin/(.*)", "dest": "/api/app.js" },
+    { "src": "/anime/(.*)", "dest": "/api/app.js" },
+    { "src": "/(.*)", "dest": "/api/app.js" }
   ]
 }
+
