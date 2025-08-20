@@ -1,43 +1,14 @@
 {
   "version": 2,
-  "functions": {
-    "app.js": {
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  },
-  "rewrites": [
-    { "source": "/stream", "destination": "/app.js" },
-    { "source": "/proxy", "destination": "/app.js" },
-    { "source": "/admin/(.*)", "destination": "/app.js" },
-    { "source": "/anime/(.*)", "destination": "/app.js" },
-    { "source": "/(.*)", "destination": "/app.js" }
+  "regions": ["sin1"],
+  "builds": [
+    { "src": "app.js", "use": "@vercel/node" }
   ],
-  "headers": [
-    {
-      "source": "/stream",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Range, Content-Type" },
-        { "key": "Cache-Control", "value": "public, max-age=31536000" }
-      ]
-    },
-    {
-      "source": "/proxy",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
-      ]
-    },
-    {
-      "source": "/public/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    }
+  "routes": [
+    { "src": "/stream", "destination": "/app.js" },
+    { "src": "/proxy", "destination": "/app.js" },
+    { "src": "/admin/(.*)", "destination": "/app.js" },
+    { "src": "/anime/(.*)", "destination": "/app.js" },
+    { "src": "/(.*)", "destination": "/app.js" }
   ]
 }
-
-
-
