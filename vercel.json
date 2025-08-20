@@ -3,12 +3,6 @@
   "regions": ["sin1"],
   "builds": [
     { "src": "app.js", "use": "@vercel/node" }
-  ],
-  "routes": [
-    { "src": "/stream", "destination": "/app.js" },
-    { "src": "/proxy", "destination": "/app.js" },
-    { "src": "/admin/(.*)", "destination": "/app.js" },
-    { "src": "/anime/(.*)", "destination": "/app.js" },
-    { "src": "/(.*)", "destination": "/app.js" }
   ]
 }
+
