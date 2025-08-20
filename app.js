@@ -7,6 +7,7 @@ const compression = require('compression');
 const cors = require('cors');
 const axios = require('axios');
 const request = require('request');
+const serverless = require('serverless-http');
 
 const indexRoutes = require('./routes/index');
 const animeRoutes = require('./routes/anime');
@@ -234,3 +235,4 @@ async function startServer() {
 startServer();
 
 module.exports = app;
+module.exports.handler = serverless(app);
