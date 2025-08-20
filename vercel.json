@@ -9,7 +9,6 @@
   "rewrites": [
     { "source": "/stream", "destination": "/app.js" },
     { "source": "/proxy", "destination": "/app.js" },
-    { "source": "/api/(.*)", "destination": "/app.js" },
     { "source": "/admin/(.*)", "destination": "/app.js" },
     { "source": "/anime/(.*)", "destination": "/app.js" },
     { "source": "/(.*)", "destination": "/app.js" }
@@ -39,3 +38,4 @@
     }
   ]
 }
+
