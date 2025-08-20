@@ -9,7 +9,7 @@ const axios = require('axios');
 const request = require('request');
 const serverless = require('serverless-http');
 
-const indexRoutes = require('./routes/index');
+const indexRoutes = require('../routes/index');
 const animeRoutes = require('./routes/anime');
 const adminRoutes = require('./routes/admin');
 const apiRoutes = require('./routes/api');
