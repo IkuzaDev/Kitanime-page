@@ -6,13 +6,13 @@
       "maxDuration": 30
     }
   },
-  "routes": [
-    { "src": "/stream", "dest": "app.js" },
-    { "src": "/proxy", "dest": "app.js" },
-    { "src": "/api/(.*)", "dest": "app.js" },
-    { "src": "/admin/(.*)", "dest": "app.js" },
-    { "src": "/anime/(.*)", "dest": "app.js" },
-    { "src": "/(.*)", "dest": "app.js" }
+  "rewrites": [
+    { "source": "/stream", "destination": "/app.js" },
+    { "source": "/proxy", "destination": "/app.js" },
+    { "source": "/api/(.*)", "destination": "/app.js" },
+    { "source": "/admin/(.*)", "destination": "/app.js" },
+    { "source": "/anime/(.*)", "destination": "/app.js" },
+    { "source": "/(.*)", "destination": "/app.js" }
   ],
   "headers": [
     {
