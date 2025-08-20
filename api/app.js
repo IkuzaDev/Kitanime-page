@@ -7,16 +7,17 @@ const compression = require('compression');
 const cors = require('cors');
 const axios = require('axios');
 const request = require('request');
+const serverless = require('serverless-http');
 
-const indexRoutes = require('../routes/index');
-const animeRoutes = require('../routes/anime');
+const indexRoutes = require('./routes/index');
+const animeRoutes = require('./routes/anime');
 const adminRoutes = require('./routes/admin');
-const apiRoutes = require('../routes/api');
+const apiRoutes = require('./routes/api');
 
-const cookieConsent = require('../middleware/cookieConsent');
-const adSlots = require('../middleware/adSlots');
+const cookieConsent = require('./middleware/cookieConsent');
+const adSlots = require('./middleware/adSlots');
 
-const { initializeDatabase } = require('../models/database');
+const { initializeDatabase } = require('./models/database');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -234,3 +235,4 @@ async function startServer() {
 startServer();
 
 module.exports = app;
+module.exports.handler = serverless(app);
