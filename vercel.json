@@ -1,46 +1,19 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "app.js",
-      "use": "@vercel/edge"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/stream",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/proxy",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/admin/(.*)",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/anime/(.*)",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/app.js"
-    }
-  ],
   "functions": {
     "app.js": {
-      "maxDuration": 30,
-      "regions": ["sgp1"]
+      "memory": 1024,
+      "maxDuration": 30
     }
   },
-  "env": {
-    "NODE_ENV": "production"
-  },
+  "routes": [
+    { "src": "/stream", "dest": "app.js" },
+    { "src": "/proxy", "dest": "app.js" },
+    { "src": "/api/(.*)", "dest": "app.js" },
+    { "src": "/admin/(.*)", "dest": "app.js" },
+    { "src": "/anime/(.*)", "dest": "app.js" },
+    { "src": "/(.*)", "dest": "app.js" }
+  ],
   "headers": [
     {
       "source": "/stream",
